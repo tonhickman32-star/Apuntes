@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apuntes del máster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tinta: #1b1f3b;
+    --papel: #f3f7ff;
+    --cuadricula: #dbe5fb;
+    --amarillo: #ffd93d;
+    --rosa: #ff6b9d;
+    --azul: #4d7cfe;
+    --verde: #3ddc97;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--tinta); font-family: Nunito, system-ui, sans-serif; font-weight: 500;
+    background-color: var(--papel);
+    background-image:
+      linear-gradient(var(--cuadricula) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+    background-size: 28px 28px;
+    min-height: 100vh; display: flex; flex-direction: column;
+  }
+  main { flex: 1; width: 100%; max-width: 760px; margin: 0 auto; padding: 48px 18px 40px; }
+  header { text-align: center; margin-bottom: 40px; }
+  h1 {
+    font-family: Fredoka, system-ui, sans-serif; font-weight: 700;
+    font-size: clamp(2.2rem, 8vw, 3.4rem); line-height: 1.05; margin: 0 0 12px;
+    transform: rotate(-1.5deg);
+  }
+  h1 span { background: var(--amarillo); padding: 0 .25em; border: 3px solid var(--tinta); border-radius: 10px; display: inline-block; box-shadow: 4px 4px 0 var(--tinta); }
+  .sub { font-size: 1.1rem; margin: 0; }
+
+  .cuaderno {
+    background: #fff; border: 3px solid var(--tinta); border-radius: 18px;
+    box-shadow: 6px 6px 0 var(--tinta); margin-bottom: 34px; overflow: hidden;
+  }
+  .cuaderno h2 {
+    font-family: Fredoka, system-ui, sans-serif; font-weight: 600; font-size: 1.5rem;
+    margin: 0; padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+    background: var(--color); border-bottom: 3px solid var(--tinta);
+  }
+  .cuaderno h2 .icono { font-size: 1.7rem; }
+  .cuaderno h2 .cuenta {
+    margin-left: auto; font-size: .9rem; background: #fff; border: 2px solid var(--tinta);
+    border-radius: 999px; padding: 2px 12px;
+  }
+  ul { list-style: none; margin: 0; padding: 4px 0; }
+  li {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 18px; border-bottom: 2px dashed var(--cuadricula);
+  }
+  li:last-child { border-bottom: 0; }
+  .nombre { font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .fecha { font-size: .9rem; opacity: .7; }
+  .nuevo {
+    font-family: Fredoka, system-ui, sans-serif; font-size: .75rem; font-weight: 600;
+    background: var(--rosa); color: #fff; border: 2px solid var(--tinta); border-radius: 8px;
+    padding: 0 7px; transform: rotate(-4deg);
+  }
+  .botones { display: flex; gap: 8px; flex-shrink: 0; }
+  a.btn {
+    font-family: Fredoka, system-ui, sans-serif; font-weight: 500; text-decoration: none;
+    color: var(--tinta); background: #fff; border: 2px solid var(--tinta); border-radius: 10px;
+    padding: 6px 14px; box-shadow: 2px 2px 0 var(--tinta);
+    transition: transform .12s, box-shadow .12s;
+  }
+  a.btn.principal { background: var(--amarillo); }
+  a.btn:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--tinta); }
+  a.btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 var(--tinta); }
+  a.btn:focus-visible { outline: 3px solid var(--azul); outline-offset: 3px; }
+
+  .aviso { text-align: center; font-weight: 700; }
+  .error { color: #b3261e; }
+  footer {
+    text-align: center; padding: 18px; font-family: Fredoka, system-ui, sans-serif;
+    border-top: 3px solid var(--tinta); background: var(--amarillo);
+  }
+  @media (max-width: 540px) {
+    li { flex-direction: column; align-items: flex-start; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a.btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1><span>Apuntes</span> del máster</h1>
+    <p class="sub">Todo lo que cayó en clase, ordenado y listo para descargar.</p>
+  </header>
+  <div id="contenido"><p class="aviso">Buscando apuntes…</p></div>
+</main>
+<footer>Hecho por Antonio · 2026</footer>
+
+<script>
+  // 1) Dónde está tu almacén de Supabase (estos dos datos son públicos).
+  const SUPABASE_URL = "https://hjqnwnluvsjrtewupjgc.supabase.co";
+  const CLAVE_PUBLICA = "sb_publishable_GS4ZxV7zCXCvAe4-3mxWdw_sNKWIXr8";
+  const BUCKET = "apuntes";
+
+  // 2) Cómo se ve cada asignatura (si subes una nueva, usa un icono y color por defecto).
+  const ESTILOS = {
+    CONTABILIDAD: { titulo: "Contabilidad", icono: "🧾", color: "#4d7cfe" },
+    DATOS:        { titulo: "Datos",        icono: "📊", color: "#3ddc97" },
+    ECONOMIA:     { titulo: "Economía",     icono: "💰", color: "#ff6b9d" }
+  };
+  const COLORES_EXTRA = ["#ffd93d", "#b388ff", "#ff9f43"];
+
+  // 3) Pregunta a Supabase qué hay dentro de una carpeta.
+  async function listar(carpeta) {
+    const respuesta = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${BUCKET}`, {
+      method: "POST",
+      headers: { "apikey": CLAVE_PUBLICA, "Content-Type": "application/json" },
+      body: JSON.stringify({ prefix: carpeta, limit: 500 })
+    });
+    if (!respuesta.ok) throw new Error("No se pudo leer el almacén (" + respuesta.status + ")");
+    return respuesta.json();
+  }
+
+  // 4) Saca la fecha del nombre: "CONTABILIDAD 01_10_26.pdf" -> 1 oct 2026.
+  function fechaDe(nombre) {
+    const m = nombre.match(/(\d{2})_(\d{2})_(\d{2})\.pdf$/i);
+    if (!m) return null;
+    return new Date(2000 + Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  }
+
+  // 5) Dibuja una asignatura como un cuaderno con sus PDFs.
+  function dibujar(asignatura, archivos, posicion) {
+    const estilo = ESTILOS[asignatura] || {
+      titulo: asignatura.charAt(0) + asignatura.slice(1).toLowerCase(),
+      icono: "📚",
+      color: COLORES_EXTRA[posicion % COLORES_EXTRA.length]
+    };
+    const hoy = new Date();
+    const filas = archivos.map(a => {
+      const ruta = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(asignatura)}/${encodeURIComponent(a.name)}`;
+      const fecha = a.fecha
+        ? a.fecha.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+        : "";
+      const esNuevo = a.fecha && (hoy - a.fecha) / 86400000 <= 7;
+      return `<li>
+        <div>
+          <div class="nombre">${a.name.replace(/\.pdf$/i, "")}${esNuevo ? '<span class="nuevo">¡Nuevo!</span>' : ""}</div>
+          <div class="fecha">${fecha}</div>
+        </div>
+        <div class="botones">
+          <a class="btn principal" href="${ruta}" target="_blank" rel="noopener">Ver</a>
+          <a class="btn" href="${ruta}?download=${encodeURIComponent(a.name)}">Descargar</a>
+        </div>
+      </li>`;
+    }).join("");
+    return `<section class="cuaderno" style="--color:${estilo.color}">
+      <h2><span class="icono">${estilo.icono}</span>${estilo.titulo}<span class="cuenta">${archivos.length}</span></h2>
+      <ul>${filas}</ul>
+    </section>`;
+  }
+
+  // 6) Junta todo: carpetas -> archivos -> página.
+  async function cargar() {
+    const caja = document.getElementById("contenido");
+    try {
+      const raiz = await listar("");
+      const carpetas = raiz.filter(x => x.id === null).map(x => x.name).sort();
+      let html = "";
+      let posicion = 0;
+      for (const carpeta of carpetas) {
+        const dentro = await listar(carpeta);
+        const pdfs = dentro
+          .filter(x => /\.pdf$/i.test(x.name))
+          .map(x => ({ name: x.name, fecha: fechaDe(x.name) }))
+          .sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+        if (pdfs.length) html += dibujar(carpeta, pdfs, posicion++);
+      }
+      caja.innerHTML = html || '<p class="aviso">Todavía no hay apuntes subidos.</p>';
+    } catch (e) {
+      caja.innerHTML = '<p class="aviso error">No se han podido cargar los apuntes. Inténtalo de nuevo en un rato.</p>';
+      console.error(e);
+    }
+  }
+  cargar();
+</script>
+</body>
+</html>
